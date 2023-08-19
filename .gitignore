@@ -31,9 +31,9 @@
 *.out
 *.app
 
-sample-1/build/*
-sample-2/build/*
-sample-3/build/*
-sample-4/build/*
+sample-1/build/
+sample-2/build/
+sample-3/build/
+sample-4/build/
 
 
