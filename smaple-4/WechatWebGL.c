@@ -1,17 +1,12 @@
-#include <emscripten.h> // For emscripten_get_device_pixel_ratio()
-#include <emscripten/html5.h> // For Emscripten HTML5 WebGL context creation API
-#include <webgl/webgl1.h> // For Emscripten WebGL API headers (see also webgl/webgl1_ext.h and webgl/webgl2.h)
-#include <string.h> // For NULL and strcmp()
-#include <assert.h> // For assert()
-#include <stdio.h>
-
-
-void set_texture_id(GLuint texture_id);
-void video_update();
+#include <emscripten.h> 
+#include <emscripten/html5.h> 
+#include <webgl/webgl1.h> 
+#include <stdio.h>  // printf
+#include <assert.h>  // assert
 
 
 static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE glContext;
-static GLuint quad, colorPos, matPos;
+static GLuint quad, colorPos, matPos, solidColor;
 static float pixelWidth, pixelHeight;
 
 static GLuint compile_shader(GLenum shaderType, const char *src)
@@ -46,14 +41,11 @@ static GLuint create_texture()
 }
 
 
-static GLuint videoId; 
-
-
-void InitWebgl(int width, int height)
+void initWebgl(int width, int height)
 {
   double dpr = emscripten_get_device_pixel_ratio();
-  emscripten_set_element_css_size("canvas", width / dpr, height / dpr);
-  emscripten_set_canvas_element_size("canvas", width, height);
+  emscripten_set_element_css_size("canvas", 300, 300);
+  emscripten_set_canvas_element_size("canvas", 300, 300);
 
   EmscriptenWebGLContextAttributes attrs;
   emscripten_webgl_init_context_attributes(&attrs);
@@ -61,7 +53,7 @@ void InitWebgl(int width, int height)
 #if MAX_WEBGL_VERSION >= 2
   attrs.majorVersion = 2;
 #endif
-  printf("webgl version = %d \n", attrs.majorVersion);
+printf("WEBGL_VERSION = %d \n", attrs.majorVersion);
   glContext = emscripten_webgl_create_context("canvas", &attrs);
   assert(glContext);
   emscripten_webgl_make_context_current(glContext);
@@ -102,36 +94,14 @@ void InitWebgl(int width, int height)
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(0);
 
+  solidColor = create_texture();
   unsigned int whitePixel = 0xFFFFFFFFu;
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &whitePixel);
 }
 
-
-void ClearScreen(float r, float g, float b, float a)
+void clearScreen(float r, float g, float b, float a)
 {
+    printf("clear color \n");
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void UpdateVideo(float x0, float y0, float scale, float r, float g, float b, float a, const char *url)
-{
-  if (!videoId)
-  {
-    videoId = create_texture();
-    set_texture_id(videoId);
-  } 
-  else 
-  {
-    video_update();
-    float mat[16] = { (160-x0)*pixelWidth, 0, 0, 0, 
-                      0, (90-y0)*pixelHeight, 0, 0, 
-                      0, 0, 1, 0, 
-                      x0*pixelWidth-1.f, y0*pixelHeight-1.f, 0, 1};
-
-    glUniformMatrix4fv(matPos, 1, 0, mat);
-    glUniform4f(colorPos, r, g, b, a);
-    glBindTexture(GL_TEXTURE_2D, videoId);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  }
-
 }

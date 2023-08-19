@@ -1,17 +1,15 @@
-#include <emscripten.h> // For emscripten_get_device_pixel_ratio()
-#include <emscripten/html5.h> // For Emscripten HTML5 WebGL context creation API
-#include <webgl/webgl1.h> // For Emscripten WebGL API headers (see also webgl/webgl1_ext.h and webgl/webgl2.h)
-#include <string.h> // For NULL and strcmp()
-#include <assert.h> // For assert()
+#include <emscripten.h> 
+#include <emscripten/html5.h> 
+#include <webgl/webgl1.h> 
+#include <string.h> 
+#include <assert.h> 
 #include <stdio.h>
 
 
-void set_texture_id(GLuint texture_id);
-void video_update();
-
+void load_texture_from_url(GLuint texture, const char *url, int *outWidth, int *outHeight);
 
 static EMSCRIPTEN_WEBGL_CONTEXT_HANDLE glContext;
-static GLuint quad, colorPos, matPos;
+static GLuint quad, colorPos, matPos, solidColor;
 static float pixelWidth, pixelHeight;
 
 static GLuint compile_shader(GLenum shaderType, const char *src)
@@ -45,11 +43,7 @@ static GLuint create_texture()
   return texture;
 }
 
-
-static GLuint videoId; 
-
-
-void InitWebgl(int width, int height)
+void initWebgl(int width, int height)
 {
   double dpr = emscripten_get_device_pixel_ratio();
   emscripten_set_element_css_size("canvas", width / dpr, height / dpr);
@@ -59,9 +53,9 @@ void InitWebgl(int width, int height)
   emscripten_webgl_init_context_attributes(&attrs);
   attrs.alpha = 0;
 #if MAX_WEBGL_VERSION >= 2
+  printf("MAX_WEBGL_VERSION = 2 \n");
   attrs.majorVersion = 2;
 #endif
-  printf("webgl version = %d \n", attrs.majorVersion);
   glContext = emscripten_webgl_create_context("canvas", &attrs);
   assert(glContext);
   emscripten_webgl_make_context_current(glContext);
@@ -71,22 +65,19 @@ void InitWebgl(int width, int height)
 
   static const char vertex_shader[] =
     "attribute vec4 pos;"
-    "varying vec2 uv;"
-    "uniform mat4 mat;"
     "void main(){"
-      "uv=pos.xy;"
-      "gl_Position=mat*pos;"
+      "gl_Position=pos;"
     "}";
   GLuint vs = compile_shader(GL_VERTEX_SHADER, vertex_shader);
 
   static const char fragment_shader[] =
     "precision lowp float;"
-    "uniform sampler2D tex;"
-    "varying vec2 uv;"
     "uniform vec4 color;"
     "void main(){"
-      "gl_FragColor=color*texture2D(tex,uv);"
+      "gl_FragColor = color;"
+      
     "}";
+    //"gl_FragColor=color*texture2D(tex,uv);"
   GLuint fs = compile_shader(GL_FRAGMENT_SHADER, fragment_shader);
 
   GLuint program = create_program(vs, fs);
@@ -102,36 +93,37 @@ void InitWebgl(int width, int height)
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(0);
 
+  solidColor = create_texture();
   unsigned int whitePixel = 0xFFFFFFFFu;
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &whitePixel);
 }
 
+typedef void (*tick_func)(double t, double dt);
 
-void ClearScreen(float r, float g, float b, float a)
+static EM_BOOL tick(double time, void *userData)
+{
+  static double t0;
+  double dt = time - t0;
+  t0 = time;
+  tick_func f = (tick_func)(userData);
+  f(time, dt);
+  return EM_TRUE;
+}
+
+void clearScreen(float r, float g, float b, float a)
 {
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void UpdateVideo(float x0, float y0, float scale, float r, float g, float b, float a, const char *url)
+void draw() 
 {
-  if (!videoId)
-  {
-    videoId = create_texture();
-    set_texture_id(videoId);
-  } 
-  else 
-  {
-    video_update();
-    float mat[16] = { (160-x0)*pixelWidth, 0, 0, 0, 
-                      0, (90-y0)*pixelHeight, 0, 0, 
-                      0, 0, 1, 0, 
-                      x0*pixelWidth-1.f, y0*pixelHeight-1.f, 0, 1};
+  float mat[16] = { 0.37, 0, 0, 0, 
+                    0, 0.43, 0, 0, 
+                    0, 0, 1, 0, 
+                    0.51, 0.35, 0, 1};
 
-    glUniformMatrix4fv(matPos, 1, 0, mat);
-    glUniform4f(colorPos, r, g, b, a);
-    glBindTexture(GL_TEXTURE_2D, videoId);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  }
-
+  glUniformMatrix4fv(matPos, 1, 0, mat);
+  glUniform4f(colorPos, 1.0f, 1.0f, 0.0f, 1.0f);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 }

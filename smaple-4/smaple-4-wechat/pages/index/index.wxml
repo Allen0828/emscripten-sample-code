@@ -1,0 +1,11 @@
+<!--index.wxml-->
+<view>
+<canvas class="main_canvas" type="webgl2" id="myCanvas" 
+style="width:{{canvas.width}}px;height:{{canvas.height}}px;" 
+bindtouchstart="bindtouchstart"
+bindtouchmove="bindtouchmove"
+bindtouchend="bindtouchend">
+</canvas>
+<label class="fps_label" id="fps_lable" style="color: red;">FPS: {{fps}}</label>
+
+</view>

@@ -1,0 +1,12 @@
+.main_canvas {
+    z-index: -1;
+    position: relative;
+  }
+  .fps_label {
+    width: 100px;
+    height: 100px;
+    z-index: 100;
+    left: 10px;
+    top: 100px;
+    position: absolute;
+  }
