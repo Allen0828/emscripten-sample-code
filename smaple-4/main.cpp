@@ -12,6 +12,7 @@ EM_BOOL draw_frame(double t, void *)
 static void emscriptenExecute()
 {
 	clearScreen(1.0f, 0.0f, 0.0f, 1.f);
+  draw();
 }
 
 int main()

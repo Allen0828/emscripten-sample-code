@@ -4,9 +4,6 @@
 #include <emscripten/html5.h>
 #include "ImageWebGL.h"
 
-// 初始化宽高
-#define WIDTH 1024
-#define HEIGHT 768
 
 EM_BOOL draw_frame(double t, void *)
 {
@@ -18,7 +15,7 @@ EM_BOOL draw_frame(double t, void *)
 
 int main()
 {
-  initWebgl(WIDTH, HEIGHT);
+  initWebgl(300, 300);
   // 设置循环
   emscripten_request_animation_frame_loop(&draw_frame, 0);
 }

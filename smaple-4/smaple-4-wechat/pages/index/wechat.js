@@ -573,6 +573,7 @@ function abort(what) {
 
   ABORT = true;
   EXITSTATUS = 1;
+
   throw what = 'Aborted(' + what + ')';
 }
 
@@ -632,7 +633,7 @@ function createExportWrapper(name, fixedasm) {
 // include: runtime_exceptions.js
 // end include: runtime_exceptions.js
 var wasmBinaryFile;
-  wasmBinaryFile = '/pages/index/wechat.wasm';
+wasmBinaryFile = '/pages/index/wechat.wasm';
   if (!isDataURI(wasmBinaryFile)) {
     wasmBinaryFile = locateFile(wasmBinaryFile);
   }
@@ -676,7 +677,7 @@ function getBinaryPromise(binaryFile) {
 
 function instantiateArrayBuffer(binaryFile, imports, receiver) {
   return getBinaryPromise(binaryFile).then((binary) => {
-    return WebAssembly.instantiate(binary, imports);
+    return WXWebAssembly.instantiate(binary, imports);
   }).then((instance) => {
     return instance;
   }).then(receiver, (reason) => {
@@ -691,7 +692,7 @@ function instantiateArrayBuffer(binaryFile, imports, receiver) {
 }
 
 function instantiateAsync(binary, binaryFile, imports, callback) {
-    var result = WXWebAssembly.instantiate(binaryFile, imports)
+  var result = WXWebAssembly.instantiate(binaryFile, imports)
     return result.then(callback, function (reason) {
         err("wasm streaming compile failed: " + reason);
         err("falling back to ArrayBuffer instantiation");
@@ -944,7 +945,7 @@ function dbg(text) {
       }
     }
 
-var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder("utf8") : undefined;
+    var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder("utf8") : undefined;
   
   
     /**
@@ -965,11 +966,6 @@ var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder("utf8") : 
   function UTF8ToString(ptr, maxBytesToRead) {
     console.log("UTF8ToString", ptr, maxBytesToRead)
     return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : ""
-    //   assert(typeof ptr == 'number');
-    //   if (!ptr) return '';
-    //   var maxPtr = ptr + maxBytesToRead;
-    //   for (var end = ptr; !(end >= maxPtr) && HEAPU8[end];) ++end;
-    //   return UTF8Decoder.decode(HEAPU8.subarray(ptr, end));
     }
   function ___assert_fail(condition, filename, line, func) {
       abort(`Assertion failed: ${UTF8ToString(condition)}, at: ` + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
@@ -1141,21 +1137,15 @@ var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder("utf8") : 
 
   
   function _emscripten_set_element_css_size(target, width, height) {
-    //   target = findEventTarget(target);
-    //   if (!target) return -4;
-  
-    //   target.style.width = width + "px";
-    //   target.style.height = height + "px";
-  
       return 0;
     }
 
   
   function handleException(e) {
     if (e instanceof ExitStatus || e == "unwind") {
-		return EXITSTATUS
-	}
-	quit_(1, e)
+      return EXITSTATUS
+    }
+    quit_(1, e)
     }
   
   
@@ -1825,19 +1815,18 @@ var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder("utf8") : 
       return 0;
     }
   
-//   var _emscripten_get_now;
-//       // Modern environment where performance.now() is supported:
-//       // N.B. a shorter form "_emscripten_get_now = performance.now;" is
-//       // unfortunately not allowed even in current browsers (e.g. FF Nightly 75).
-//       _emscripten_get_now = () => performance.now();
-//   ;
-var _emscripten_get_now;
-var newDateTime = new Date().getTime();
-_emscripten_get_now = function() {
-    console.log("111111111111")
-    return new Date().getTime() - newDateTime;
-}
-  
+  // var _emscripten_get_now;
+  //     // Modern environment where performance.now() is supported:
+  //     // N.B. a shorter form "_emscripten_get_now = performance.now;" is
+  //     // unfortunately not allowed even in current browsers (e.g. FF Nightly 75).
+  //     _emscripten_get_now = () => performance.now();
+  // ;
+  var _emscripten_get_now;
+  var newDateTime = new Date().getTime();
+  _emscripten_get_now = function() {
+      console.log("111111111111")
+      return new Date().getTime() - newDateTime;
+  }
   
     /**
      * @param {number=} arg
@@ -1995,13 +1984,6 @@ _emscripten_get_now = function() {
         }
         return source;
       },createContext:function(/** @type {HTMLCanvasElement} */ canvas, webGLContextAttributes) {
-  
-        // BUG: Workaround Safari WebGL issue: After successfully acquiring WebGL context on a canvas,
-        // calling .getContext() will always return that context independent of which 'webgl' or 'webgl2'
-        // context version was passed. See https://bugs.webkit.org/show_bug.cgi?id=222758 and
-        // https://github.com/emscripten-core/emscripten/issues/13295.
-        // TODO: Once the bug is fixed and shipped in Safari, adjust the Safari version field in above check.
-  
         var ctx = canvas.getContext("webgl2", webGLContextAttributes);
   
         if (!ctx) return 0;
@@ -2161,37 +2143,37 @@ _emscripten_get_now = function() {
      */
   function UTF8ArrayToString(heapOrArray, idx, maxBytesToRead) {
     var endIdx = idx + maxBytesToRead;
-	var endPtr = idx;
-	while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
-	if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
-		return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr))
-	}
-	var str = "";
-	while (idx < endPtr) {
-		var u0 = heapOrArray[idx++];
-		if (!(u0 & 128)) {
-			str += String.fromCharCode(u0);
-			continue
-		}
-		var u1 = heapOrArray[idx++] & 63;
-		if ((u0 & 224) == 192) {
-			str += String.fromCharCode((u0 & 31) << 6 | u1);
-			continue
-		}
-		var u2 = heapOrArray[idx++] & 63;
-		if ((u0 & 240) == 224) {
-			u0 = (u0 & 15) << 12 | u1 << 6 | u2
-		} else {
-			u0 = (u0 & 7) << 18 | u1 << 12 | u2 << 6 | heapOrArray[idx++] & 63
-		}
-		if (u0 < 65536) {
-			str += String.fromCharCode(u0)
-		} else {
-			var ch = u0 - 65536;
-			str += String.fromCharCode(55296 | ch >> 10, 56320 | ch & 1023)
-		}
-	}
-	return str
+    var endPtr = idx;
+    while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
+    if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
+      return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr))
+    }
+    var str = "";
+    while (idx < endPtr) {
+      var u0 = heapOrArray[idx++];
+      if (!(u0 & 128)) {
+        str += String.fromCharCode(u0);
+        continue
+      }
+      var u1 = heapOrArray[idx++] & 63;
+      if ((u0 & 224) == 192) {
+        str += String.fromCharCode((u0 & 31) << 6 | u1);
+        continue
+      }
+      var u2 = heapOrArray[idx++] & 63;
+      if ((u0 & 240) == 224) {
+        u0 = (u0 & 15) << 12 | u1 << 6 | u2
+      } else {
+        u0 = (u0 & 7) << 18 | u1 << 12 | u2 << 6 | heapOrArray[idx++] & 63
+      }
+      if (u0 < 65536) {
+        str += String.fromCharCode(u0)
+      } else {
+        var ch = u0 - 65536;
+        str += String.fromCharCode(55296 | ch >> 10, 56320 | ch & 1023)
+      }
+    }
+    return str
     }
   function printChar(stream, curr) {
       var buffer = printCharBuffers[stream];
@@ -2304,6 +2286,12 @@ _emscripten_get_now = function() {
       GL.shaders[id] = GLctx.createShader(shaderType);
   
       return id;
+    }
+
+  function _glDrawArrays(mode, first, count) {
+  
+      GLctx.drawArrays(mode, first, count);
+  
     }
 
   function _glEnable(x0) { GLctx.enable(x0) }
@@ -2539,6 +2527,35 @@ _emscripten_get_now = function() {
 
   function _glTexParameteri(x0, x1, x2) { GLctx.texParameteri(x0, x1, x2) }
 
+  function webglGetUniformLocation(location) {
+      var p = GLctx.currentProgram;
+  
+      if (p) {
+        var webglLoc = p.uniformLocsById[location];
+        // p.uniformLocsById[location] stores either an integer, or a WebGLUniformLocation.
+  
+        // If an integer, we have not yet bound the location, so do it now. The integer value specifies the array index
+        // we should bind to.
+        if (typeof webglLoc == 'number') {
+          p.uniformLocsById[location] = webglLoc = GLctx.getUniformLocation(p, p.uniformArrayNamesById[location] + (webglLoc > 0 ? '[' + webglLoc + ']' : ''));
+        }
+        // Else an already cached WebGLUniformLocation, return it.
+        return webglLoc;
+      } else {
+        GL.recordError(0x502/*GL_INVALID_OPERATION*/);
+      }
+    }
+  
+  function _glUniform4f(location, v0, v1, v2, v3) {
+      GLctx.uniform4f(webglGetUniformLocation(location), v0, v1, v2, v3);
+    }
+
+  
+  function _glUniformMatrix4fv(location, count, transpose, value) {
+  
+      count && GLctx.uniformMatrix4fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value>>2, count*16);
+    }
+
   function _glUseProgram(program) {
       program = GL.programs[program];
       GLctx.useProgram(program);
@@ -2591,6 +2608,7 @@ var wasmImports = {
   "glCompileShader": _glCompileShader,
   "glCreateProgram": _glCreateProgram,
   "glCreateShader": _glCreateShader,
+  "glDrawArrays": _glDrawArrays,
   "glEnable": _glEnable,
   "glEnableVertexAttribArray": _glEnableVertexAttribArray,
   "glGenBuffers": _glGenBuffers,
@@ -2600,6 +2618,8 @@ var wasmImports = {
   "glShaderSource": _glShaderSource,
   "glTexImage2D": _glTexImage2D,
   "glTexParameteri": _glTexParameteri,
+  "glUniform4f": _glUniform4f,
+  "glUniformMatrix4fv": _glUniformMatrix4fv,
   "glUseProgram": _glUseProgram,
   "glVertexAttribPointer": _glVertexAttribPointer
 };
@@ -2800,7 +2820,6 @@ var missingLibrarySymbols = [
   '_setNetworkCallback',
   'emscriptenWebGLGet',
   'emscriptenWebGLGetUniform',
-  'webglGetUniformLocation',
   'emscriptenWebGLGetVertexAttrib',
   '__glGetActiveAttribOrUniform',
   'writeGLArray',
@@ -2916,6 +2935,7 @@ var unexportedSymbols = [
   'colorChannelsInGlTextureFormat',
   'emscriptenWebGLGetTexPixelData',
   '__glGenObject',
+  'webglGetUniformLocation',
   'webglPrepareUniformLocationsBeforeFirstUse',
   'webglGetLeftBracePos',
   'emscripten_webgl_power_preferences',

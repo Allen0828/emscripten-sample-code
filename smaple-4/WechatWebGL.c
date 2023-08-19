@@ -105,3 +105,15 @@ void clearScreen(float r, float g, float b, float a)
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
+
+void draw() 
+{
+  float mat[16] = { 0.37, 0, 0, 0, 
+                    0, 0.43, 0, 0, 
+                    0, 0, 1, 0, 
+                    0.51, 0.35, 0, 1};
+
+  glUniformMatrix4fv(matPos, 1, 0, mat);
+  glUniform4f(colorPos, 1.0f, 1.0f, 0.0f, 1.0f);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+}

@@ -26,6 +26,6 @@ Page({
         })
     },
     initEngine: function() {
-        // require('./wechat.js');
+        require('./wechat.js');
     },
 })

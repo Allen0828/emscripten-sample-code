@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-project(sample_2)
+project(sample_1)
 
 macro(append_linker_flags FLAGS)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${FLAGS}")
@@ -46,10 +46,4 @@ if (EMSCRIPTEN)
 endif()
 
 file(GLOB_RECURSE sources *.cpp *.c *.h)
-add_executable(sample_2 ${sources})
-
-# copy 资源
-file(GLOB_RECURSE assets *.png)
-foreach(asset ${assets})
-	file(COPY "${asset}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
-endforeach()
+add_executable(sample_1 ${sources})

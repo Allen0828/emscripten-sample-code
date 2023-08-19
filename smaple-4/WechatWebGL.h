@@ -9,7 +9,7 @@ void initWebgl(int width, int height);
 
 // 设置背景颜色
 void clearScreen(float r, float g, float b, float a);
-
+void draw();
 
 #ifdef __cplusplus
 }
