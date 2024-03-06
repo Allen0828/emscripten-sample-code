@@ -8,10 +8,13 @@
 4: emsdk<br>
 
 
-# sample 1 将文件以流的形式传递到C++
+# sample 1 绘制一个三角形
 
 
 # sample 2 c++ 层创建 webGL textureId 数据由js层设置
 
 
 # sample 3 c++控制web渲染视频
+
+
+# sample 4 微信小程序使用webGL2
